@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Bird Model</title>
+	<script src="js/three.js" type="text/javascript"></script>
+	<script src="js/TrackballControls.js"></script>
+	<script type="text/javascript">
+		var camera, scene, renderer;
+
+		function init(){
+			canvas = document.getElementById("container");
+			//renderer
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
+			canvas.appendChild(renderer.domElement);
+			//scene definition
+			scene = new THREE.Scene();
+			//scene.fog = new THREE.Fog( 0x808080, 3000, 6000 );
+			// LIGHTS
+			var ambientLight = new THREE.AmbientLight( 0x222222 );
+			var light = new THREE.DirectionalLight( 0xFFFFFF, 1.0 );
+			light.position.set( 200, 400, 500 );
+
+			var light2 = new THREE.DirectionalLight( 0xFFFFFF, 1.0 );
+			light2.position.set( -400, 200, -300 );
+
+			scene.add(ambientLight);
+			scene.add(light);
+			scene.add(light2);
+			
+			//camera definition
+			camera = new THREE.PerspectiveCamera(45, canvas.offsetWidth / canvas.offsetHeight, 0.1, 40000);
+			scene.add(camera);
+			camera.position.set( 0, 659, -619 );
+			//controls
+			controls = new THREE.TrackballControls(camera);
+			
+			createBird();		
+		}
+		function createSupport(){
+		var cubeMaterial = new THREE.MeshLambertMaterial({
+		
+		color : 0xf07020
+		});
+		
+		support =  new THREE.Mesh(
+					new THREE.CubeGeometry(20+64+110,4,2*77),cubeMaterial);
+		support.position.y = 4/2;			
+		scene.add(support);
+		
+		
+		//shputa e majte
+		leftFoot = new THREE.Mesh (
+					new THREE.CubeGeometry(20+64+110,52,6), cubeMaterial);
+		
+		leftFoot.position.y = 52/2;
+		leftFoot.position.z = 110+6/2;
+		scene.add(leftFoot);
+		
+		
+		//kemba e majt
+		
+		leftLeg = new THREE.Mesh(new THREE.CubeGeometry(64,334+52,6), cubeMaterial);
+		leftLeg.position.y = (334+52)/2;
+		leftLeg.position.z = 77+6/2;
+		scene.add(leftLeg);
+		
+		//shputa e djathte
+		rightFoot = new THREE.Mesh (
+					new THREE.CubeGeometry(20+64+110,52,6), cubeMaterial);
+		
+		rightFoot.position.y = 52/2;
+		rightFoot.position.z = -77+6/2;
+		scene.add(rightFoot);
+		
+		
+		//kemba e djathe
+		
+		rightLeg = new THREE.Mesh(new THREE.CubeGeometry(64,334+52,6), cubeMaterial);
+		rightLeg.position.y = (334+52)/2;
+		rightLeg.position.z = -77+6/2;
+		scene.add(rightLeg);
+		
+		
+		
+		}
+		function createBody(){
+		
+		var sphereMaterial = new THREE.MeshPhongMaterial({
+		
+		color: 0xF781F3
+		
+		});
+		
+		
+		
+		sphere = new THREE.Mesh(new THREE.SphereGeometry(116/2, 32, 32), sphereMaterial);
+		sphere.position.y = 160;
+		
+		
+		
+		scene.add(sphere)
+		
+	
+		
+	
+		
+		var cylinderMaterial = new THREE.MeshPhongMaterial({
+		
+		color: 0x58D3F7
+		
+		});
+		
+		cylinder = new THREE.Mesh(new THREE.CylinderGeometry(24/2, 24/2, 390, 32, 32), cylinderMaterial);
+		cylinder.position.y = 160+390/2;
+		scene.add(cylinder);
+		
+		var cylMaterial = new THREE.MeshPhongMaterial({
+		
+		color: 0x58D3F7
+		
+		});
+		
+		cyl = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.6, 154, 32, 32), cylMaterial);
+		cyl.position.y = 160+390/6;
+		scene.add(cyl);
+		
+		
+		
+		}
+		
+		function createHead(){
+		
+		var cylinderMaterial = new THREE.MeshPhongMaterial({
+		
+		color: 0xF7FE2E
+		
+		});
+		
+		
+		head = new THREE.Mesh(new THREE.SphereGeometry(104/2, 32, 32), cylinderMaterial);
+		head.position.y = 160+390;
+		head.scale.set(0.8, 0.8, 0.8);
+		scene.add(head);
+		
+		//cilindri1
+		
+		var hatMaterial = new THREE.MeshPhongMaterial({
+		color: 0xF2F2F2
+		
+		});
+		
+		hat1 = new THREE.Mesh(new THREE.CylinderGeometry(142/2, 142/2, 10, 32, 32), hatMaterial);
+		hat1.position.y = 160+390+40+10/2;
+		hat1.scale.set(0.8,0.8,0.8);
+		scene.add(hat1);
+		
+		hat2 = new THREE.Mesh(new THREE.CylinderGeometry(80/2, 80/2, 70, 32, 32), hatMaterial);
+		hat2.position.y = 160+390+40+10+50/2;
+		hat2.scale.set(0.8,0.8,0.8);
+		scene.add(hat2);
+		
+		
+		}
+		
+		function createBird(){
+		
+		createSupport();
+		createBody();
+		createHead();
+		}
+		
+		function animate() {
+		    requestAnimationFrame(animate);
+    		render();
+    		update();
+		}
+		//update function
+		function update(){
+			controls.update();
+		}
+		function render() {
+		    renderer.render(scene, camera);
+		}
+	</script>
+</head>
+
+<body onload="init();animate()">
+<div id="container" style="width:846px;height:494px;background-color:#000000">
+
+</div>
+</body>
+</html>

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+
+    <title>Space Apps Challenge - Asteroid Visualisation</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/starter-template.css" rel="stylesheet">
+
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+
+    <script src="js/three.js" type="text/javascript"></script>
+    <script src="js/TrackballControls.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+
+    
+
+
+</head>
+
+<body onload="init(); animate();">
+
+<nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Avengers Visualisation</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="#">Home</a></li>
+                <li><a href="">Information</a></li>
+                <li><a href="">About US</a></li>
+            </ul>
+        </div>
+        <!--/.nav-collapse -->
+    </div>
+</nav>
+
+<div class="container">
+
+
+    <div class="row">
+        <div class="col-lg-9">
+            <h3 align="center">Asteroid Visualisation</h3>
+
+        </div>
+        <div class="col-lg-3">
+
+            <h3 align="center">Potential Hazardous</h3>
+
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col-lg-9">
+            <div id="container" style="width:100%;height:500px;background-color:black;">
+
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+		<div style="background-color:transparent; width: 300px; padding: 10px; color: white;">
+                <div style="width: 100%; height: 500px; overflow: auto" class="listy">
+                    <ul id="ListAsteroids">
+
+                    </ul>
+                </div>
+
+            </div>
+			
+			<div>
+			<p>Settings</p>
+			<form role="form">
+			<div class="checkbox">
+			<label><input type="checkbox" id="ShowAllAsteroids">Show all Asteroids</label>
+			</div>
+			<div class="checkbox">
+			<label><input type="checkbox" id="ShowImpact">Show Impact</label>
+			</div>
+			
+    </div>
+  </form>
+			
+			</div>
+			
+			
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div id="info" style="width:70em;height:200px;background-color:black; margin-top: 50px; padding: 15px;">
+                    Infographics
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- footer -->
+    <div class="row">
+        <div class="custom" align="left">
+            <div style="height: 50px; background-color: #1E1E1F; margin-top: 50px; padding: 15px;"> Copyright Avengers
+                Team - Seeu Tech Park Tetovo
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script type="text/javascript">
+
+      var
+  radiusScale = 1E-6,
+  atmosScale = radiusScale * 1.005,
+  atmosUpperScale = atmosScale,
+  orbitScale = 1E-7;
+
+var globe;
+var starImage, starGlowMaterial;
+
+function newStars(starProps, stars) {
+  var orbitPlane = new THREE.Object3D;
+  var orbitPosition = new THREE.Object3D;
+  orbitPlane.add(orbitPosition);
+
+  var starsGeometry = new THREE.Geometry();
+
+  // For the sun.
+  starsGeometry.vertices.push(new THREE.Vertex(new THREE.Vector3()));
+  for (var i = 0; i < stars.length; i++) {
+    var s = stars[i];
+    var ra = s[0] * toRad;
+    var dec = s[1] * toRad;
+    var dist = s[2] * orbitScale;
+    var vec = new THREE.Vector3(dist * Math.sin(ra) * Math.cos(dec),
+                                dist * Math.sin(ra) * Math.sin(dec),
+                                dist * Math.cos(ra));
+    starsGeometry.vertices.push(new THREE.Vertex(vec));
+  }
+
+  var starImage = pathTexture('star_glow', '.png');
+  var starGlowMaterial =
+    new THREE.ParticleBasicMaterial({ color: 0xffffff,
+                                      size: starProps.radius * 1E1 * radiusScale,
+                                      map: starImage,
+                                      sizeAttenuation: true,
+                                      depthTest: false,
+                                      transparent: false });
+
+  var starMiniMaterial =
+    new THREE.ParticleBasicMaterial({ color: 0xffffff,
+                                      size: 4,
+                                      map: starImage,
+                                      sizeAttenuation: false,
+                                      blending: THREE.AdditiveBlending,
+                                      depthTest: false,
+                                      transparent: true });
+
+  var shape = new THREE.Object3D();
+
+  var starPoints = new THREE.ParticleSystem(starsGeometry, starMiniMaterial);
+  starPoints.sortParticles = true;
+  shape.add(starPoints);
+
+  var starGlows = new THREE.ParticleSystem(starsGeometry, starGlowMaterial);
+  starGlows.sortParticles = true;
+  shape.add(starGlows);
+
+  orbitPosition.add(shape);
+  orbitPlane.orbitPosition = orbitPosition;
+  return orbitPlane;
+}
+
+function newPointLight() {
+  return new THREE.PointLight(0xffffff);
+}
+
+function newStar(starProps) {
+  var orbitPlane = new THREE.Object3D;
+  var orbitPosition = new THREE.Object3D;
+  orbitPlane.add(orbitPosition);
+
+  // TODO(pablo): add back in 'sun-white' sunspot texture.
+  var star = new THREE.Object3D;
+  /*
+     lodSphere(starProps.radius,
+                       new THREE.MeshBasicMaterial({color: 0xffffff,
+                                                    depthTest: true,
+                                                    wireframe: false,
+                                                    transparent: false }));
+  */
+  orbitPosition.add(star);
+
+  orbitPlane.orbitPosition = orbitPosition;
+  return orbitPlane;
+}
+
+var n = {};
+
+function newOrbitingPlanet(planetProps) {
+  var orbitPlane = new THREE.Object3D;
+  doRot(orbitPlane, planetProps.orbit);
+
+  var orbitPosition = new THREE.Object3D;
+  orbitPlane.add(orbitPosition);
+
+  // Attaching this property triggers orbit of planet during animation.
+  orbitPosition.orbit = planetProps.orbit;
+
+  var planet = newPlanet(planetProps);
+  planet.rotation.x -= halfPi;
+  orbitPosition.add(planet);
+
+  // Children centered at this planet's orbit position.
+  orbitPlane.orbitPosition = orbitPosition;
+
+  n[planetProps.name] = orbitPlane;
+  return orbitPlane;
+};
+
+function newPlanet(planetProps) {
+  var planet = new THREE.Object3D;
+  // TODO(pablo): put these in near LOD only.
+  if (planetProps.texture_atmosphere) {
+    planet.add(newAtmosphere(planetProps));
+    planet.add(atmos(planetProps.radius * atmosUpperScale));
+  }
+
+  // TODO(pablo): if underlying planet is a BasicMeshMaterial, order
+  // matters and surface has to go after atmosphere; adding surface
+  // before atmosphere causes failure of atmosphere display.  No idea
+  // why.  This is not currently the case, but this appears to be
+  // idemopotent given then current config, so leaving it this way.
+  planet.add(newSurface(planetProps));
+
+  // Tilt could be set in orbit configuration, but for the moment
+  // seems more intrinsic.
+  planet.rotation.z = planetProps.axialInclination * toDeg;
+  //planet.rotation.x += planetProps.axialInclination * toDeg;
+
+  // Attaching this property triggers rotation of planet during animation.
+  planet.siderealRotationPeriod = planetProps.siderealRotationPeriod;
+
+  return planet;
+}
+
+function newSurface(planetProps) {
+  var planetMaterial;
+  if (!(planetProps.texture_hydrosphere || planetProps.texture_terrain)) {
+    planetMaterial = cacheMaterial(planetProps.name);
+  } else {
+    // Fancy planets.
+    var shader = THREE.ShaderUtils.lib['normal'];
+    var uniforms = THREE.UniformsUtils.clone(shader.uniforms);
+
+    uniforms['tDiffuse'].texture = pathTexture(planetProps.name);
+    uniforms['enableAO'].value = false;
+    uniforms['enableDiffuse'].value = true;
+    uniforms['uDiffuseColor'].value.setHex(0xffffff);
+    uniforms['uAmbientColor'].value.setHex(0);
+    uniforms['uShininess'].value = 20;
+
+    if (planetProps.texture_hydrosphere) {
+      uniforms['enableSpecular'].value = true;
+      uniforms['tSpecular'].texture = pathTexture(planetProps.name, '_hydro.jpg');
+      uniforms['uSpecularColor'].value.setHex(0xffffff);
+    }
+
+    if (planetProps.texture_terrain) {
+      uniforms['tNormal'].texture = pathTexture(planetProps.name, '_terrain.jpg');
+      uniforms['uNormalScale'].value = 0.1;
+    }
+
+    planetMaterial = new THREE.ShaderMaterial({
+        fragmentShader: shader.fragmentShader,
+        vertexShader: shader.vertexShader,
+        uniforms: uniforms,
+        // wireframe: true,
+        lights: true
+      });
+  }
+
+  return lodSphere(planetProps.radius * radiusScale, planetMaterial);
+}
+
+function newAtmosphere(planetProps) {
+  var mat =
+    new THREE.MeshLambertMaterial({color: 0xffffff,
+                                   map: pathTexture(planetProps.name, '_atmos.png'),
+                                   transparent: true});
+  return lodSphere(planetProps.radius * atmosScale, mat);
+}
+
+function newOrbit(orbit) {
+  var ellipseCurve = new THREE.EllipseCurve(0, 0,
+                                            orbit.semiMajorAxis * orbitScale,
+                                            orbit.eccentricity,
+                                            0, 2.0 * Math.PI,
+                                            false);
+  var ellipseCurvePath = new THREE.CurvePath();
+  ellipseCurvePath.add(ellipseCurve);
+  var ellipseGeometry = ellipseCurvePath.createPointsGeometry(100);
+  ellipseGeometry.computeTangents();
+  var orbitMaterial = new THREE.LineBasicMaterial({
+      color: 0x0000ff,
+      blending: THREE.AdditiveBlending,
+      depthTest: true,
+      transparent: true
+    });
+  
+  var line = new THREE.Line(ellipseGeometry, orbitMaterial);
+  doRot(line, orbit);
+  return line;
+}
+
+function doRot(obj, orbit) {
+  //obj.rotation.z = orbit.longitudeOfPerihelion; // Add true anomaly here.
+  obj.rotation.x = halfPi + orbit.inclination * toDeg;
+  //obj.rotation.y = orbit.longitudeOfAscendingNode;
+}
+
+    </script>
+<script src="js/bootstrap.min.js"></script>
+
+
+</body>
+</html>
+
